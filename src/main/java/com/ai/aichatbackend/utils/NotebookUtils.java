@@ -37,6 +37,14 @@ public class NotebookUtils {
         return new ArrayList<>(this.notes);
     }
 
+    public void checkAndUpdateNotebook(String aiResponse) {
+        log.info("aiResponse = " + aiResponse);
+        List<Note> newNotes = extractNotesFromResponse(aiResponse);
+        for (Note note : newNotes) {
+            addNote(note.getContent(), note.getTag(), note.getImportance());
+        }
+    }
+
     public String getFormattedNotes() {
         StringBuilder sb = new StringBuilder();
         sb.append("AI Notebook:\n");

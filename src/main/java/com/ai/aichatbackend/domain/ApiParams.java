@@ -12,6 +12,7 @@ import java.io.Serializable;
 public class ApiParams implements Serializable {
     @Serial
     private static final long serialVersionUID = 4523989901731359825L;
+    private String model;
     /**
      * 生成过程中核采样方法概率阈值，例如，取值为0.8时，仅保留概率加起来大于等于0.8的最可能token的最小集合作为候选集。
      * 取值范围为（0,1.0)，取值越大，生成的随机性越高；取值越低，生成的确定性越高。

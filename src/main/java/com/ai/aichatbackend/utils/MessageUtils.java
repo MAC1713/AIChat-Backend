@@ -1,8 +1,6 @@
 package com.ai.aichatbackend.utils;
 
-import com.ai.aichatbackend.common.Constants.AIChatConstants;
 import com.ai.aichatbackend.common.Global.GlobalParams;
-import com.ai.aichatbackend.domain.Note;
 import com.alibaba.dashscope.aigc.generation.Generation;
 import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
@@ -20,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.ai.aichatbackend.common.Constants.AIAssistantConstants.*;
 import static com.ai.aichatbackend.common.Constants.AIChatConstants.*;
 
 /**
@@ -35,7 +34,7 @@ public class MessageUtils {
     private final AIPromptsUtils aiPromptsUtils;
 
     @Autowired
-    private MessageUtils (NotebookUtils notebookUtils, ApiParamsUtils apiParamsUtils, AIPromptsUtils aiPromptsUtils) {
+    private MessageUtils(NotebookUtils notebookUtils, ApiParamsUtils apiParamsUtils, AIPromptsUtils aiPromptsUtils) {
         this.notebookUtils = notebookUtils;
         this.apiParamsUtils = apiParamsUtils;
         this.aiPromptsUtils = aiPromptsUtils;
@@ -48,8 +47,8 @@ public class MessageUtils {
         return Message.builder().role(role.getValue()).content(content).build();
     }
 
-    public String generateResponse(String userInput, GenerationParam params) throws ApiException, NoApiKeyException, InputRequiredException, IOException, ClassNotFoundException {
-        Message userMessage = createMessage(Role.USER, userInput);
+    public String generateResponse(String inputMessage, GenerationParam params) throws ApiException, NoApiKeyException, InputRequiredException, IOException, ClassNotFoundException {
+        Message userMessage = createMessage(Role.USER, inputMessage);
         this.fullConversationHistory = GlobalParams.getInstance().getFullConversationHistory();
         this.messageCountSinceLastReminder = GlobalParams.getInstance().getMessageCount();
 
@@ -73,26 +72,134 @@ public class MessageUtils {
         }
     }
 
-    public void sendSpecialMessage(Role role, String collation, Boolean useNotebook) throws NoApiKeyException, InputRequiredException, IOException, ClassNotFoundException {
+    public String sendMessage(Role role, String message, Boolean useNotebook) throws NoApiKeyException, InputRequiredException, IOException, ClassNotFoundException {
         try {
             List<Message> messages = new ArrayList<>();
-            messages.add(Message.builder().role(role.getValue()).content(collation).build());
-            String aiResponse = generateResponse(collation, createGenerationParam(messages));
+            messages.add(createMessage(role, message));
+            String aiResponse = generateResponse(message, createGenerationParam(messages));
             if (Boolean.TRUE.equals(useNotebook)) {
-                checkAndUpdateNotebook(aiResponse);
+                notebookUtils.checkAndUpdateNotebook(aiResponse);
             }
+            return aiResponse;
         } catch (ApiException | NoApiKeyException | InputRequiredException | IOException | ClassNotFoundException ex) {
             log.error("Error occurred while sending special message: " + ex.getMessage());
             throw ex;
         }
     }
 
-    public void checkAndUpdateNotebook(String aiResponse) {
-        log.info("aiResponse = " + aiResponse);
-        List<Note> newNotes = notebookUtils.extractNotesFromResponse(aiResponse);
-        for (Note note : newNotes) {
-            notebookUtils.addNote(note.getContent(), note.getTag(), note.getImportance());
+    public void sendNoteAssistantMessage(String message) throws NoApiKeyException, InputRequiredException, IOException, ClassNotFoundException {
+        List<Message> messages = new ArrayList<>();
+        int totalTokens = 0;
+
+        // 1. 添加系统消息
+        String systemPrompt = aiPromptsUtils.loadPrompts().getInitialSystemPrompt() + "\n" + HOW_TO_USE_NOTEBOOK;
+        messages.add(createMessage(Role.SYSTEM, systemPrompt));
+        totalTokens += countTokens(systemPrompt);
+
+        // 2. 添加记事本内容
+        String notebookContent = "Here's the all of your notebook:\n" + notebookUtils.getFormattedNotes();
+        messages.add(createMessage(Role.SYSTEM, notebookContent));
+        totalTokens += countTokens(notebookContent);
+
+        // 3. 计算用户消息token
+        totalTokens += countTokens(message);
+
+        // 4. 计算剩余可用于历史消息的token数
+        int remainingTokens = SMARTEST_MAX_TOKENS - totalTokens;
+
+        // 5. 添加历史消息
+        List<Message> historyMessages = GlobalParams.getInstance().getFullConversationHistory();
+        StringBuilder historyConversation = new StringBuilder();
+        String content;
+        for (int i = historyMessages.size() - 1; i >= 0; i--) {
+            Message historyMessage = historyMessages.get(i);
+            if (historyMessage.getRole().equals(Role.USER.getValue()) || historyMessage.getRole().equals(Role.ASSISTANT.getValue())) {
+                if (historyMessage.getRole().equals(Role.USER.getValue())) {
+                    content = USER_NAME + ": " + historyMessage.getContent() + "\n";
+                } else {
+                    content = AI_NAME + ": " + historyMessage.getContent() + "\n";
+                }
+                int contentTokens = countTokens(content);
+
+                if (remainingTokens - contentTokens >= 0) {
+                    historyConversation.insert(0, content);
+                    remainingTokens -= contentTokens;
+                } else {
+                    // 如果剩余空间不足，尝试截断最后一条消息
+                    String truncatedContent = truncateToFitTokens(content, remainingTokens);
+                    if (!truncatedContent.isEmpty()) {
+                        historyConversation.insert(0, truncatedContent);
+                    }
+                    break;
+                }
+            }
         }
+
+        if (historyConversation.length() > 0) {
+            messages.add(createMessage(Role.SYSTEM, historyConversation.toString()));
+        }
+
+        // 6. 添加用户消息
+        messages.add(createMessage(Role.USER, message));
+
+        GenerationParam params = createSmartParam(messages);
+
+        try {
+            GenerationResult result = callGenerationWithMessages(params);
+            String aiResponse = result.getOutput().getChoices().get(0).getMessage().getContent();
+            notebookUtils.checkAndUpdateNotebook(aiResponse);
+        } catch (ApiException | NoApiKeyException | InputRequiredException e) {
+            log.error("Error occurred while calling generation API: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * 辅助方法：计算字符串的token数量
+     *
+     * @param text 字符串
+     * @return token数量
+     */
+    private int countTokens(String text) {
+        // 这里需要实现一个更准确的token计数方法
+        // 可能需要使用特定的分词器或者API来获得准确的token数
+        // 以下是一个简单的示例实现，实际使用时需要替换为更准确的方法
+        int tokenCount = 0;
+        for (String word : text.split("\\s+")) {
+            if (word.matches(".*[\\u4e00-\\u9fa5]+.*")) {
+                // 对于包含中文字符的词，每个字符算作一个token
+                tokenCount += word.length();
+            } else {
+                // 对于非中文词，整个词算作一个token
+                tokenCount++;
+            }
+        }
+        return tokenCount;
+    }
+
+    /**
+     * 辅助方法：截断内容以适应剩余的token数
+     *
+     * @param content         剩余文本
+     * @param remainingTokens 剩余token数
+     * @return 截断后的文本
+     */
+    private String truncateToFitTokens(String content, int remainingTokens) {
+        StringBuilder truncated = new StringBuilder();
+        String[] words = content.split("\\s+");
+        int tokenCount = 0;
+
+        for (String word : words) {
+            int wordTokens = countTokens(word + " ");
+            if (tokenCount + wordTokens <= remainingTokens) {
+                truncated.append(word).append(" ");
+                tokenCount += wordTokens;
+            } else {
+                break;
+            }
+        }
+
+        return truncated.toString().trim();
     }
 
     /**
@@ -106,8 +213,7 @@ public class MessageUtils {
         List<Message> contextMessages = new ArrayList<>();
         setHistoryConversation(contextMessages);
 
-
-        String firstSystemMessage = aiPromptsUtils.loadPrompts().getInitialSystemPrompt() + "\n" + aiPromptsUtils.loadPrompts().getSimplifiedSystemPrompt() + "\n" + AIChatConstants.HOW_TO_USE_NOTEBOOK;
+        String firstSystemMessage = aiPromptsUtils.loadPrompts().getInitialSystemPrompt() + "\n" + aiPromptsUtils.loadPrompts().getSimplifiedSystemPrompt();
 
         //初始化System消息
         if (messageCountSinceLastReminder == 0) {
@@ -119,12 +225,6 @@ public class MessageUtils {
         if (messageCountSinceLastReminder >= REMINDER_INTERVAL && messageCountSinceLastReminder % REMINDER_INTERVAL == 0) {
             contextMessages.add(createMessage(Role.SYSTEM, aiPromptsUtils.loadPrompts().getSimplifiedSystemPrompt()));
             fullConversationHistory.add(createMessage(Role.SYSTEM, aiPromptsUtils.loadPrompts().getSimplifiedSystemPrompt()));
-        }
-
-        //每2次对话提示一次notebook指令
-        if (messageCountSinceLastReminder >= REMIND_USE_NOTEBOOK && messageCountSinceLastReminder % REMIND_USE_NOTEBOOK == 0) {
-            contextMessages.add(createMessage(Role.SYSTEM, AIChatConstants.HOW_TO_USE_NOTEBOOK));
-            fullConversationHistory.add(createMessage(Role.SYSTEM, AIChatConstants.HOW_TO_USE_NOTEBOOK));
         }
 
         //每次对话提示一次notebook
@@ -170,6 +270,12 @@ public class MessageUtils {
                 .build();
     }
 
+    /**
+     * 创建smart助手消息
+     *
+     * @param messages 所有消息
+     * @return smart助手返回消息
+     */
     public GenerationParam createSmartParam(List<Message> messages) {
         return GenerationParam.builder()
                 .model(QWEN_MODEL_SMARTEST)
@@ -199,10 +305,11 @@ public class MessageUtils {
 
     /**
      * 发送消息，获取ai回复
+     *
      * @param param 封装好的api消息
      * @return ai回复
-     * @throws ApiException api异常
-     * @throws NoApiKeyException 没有api key异常
+     * @throws ApiException           api异常
+     * @throws NoApiKeyException      没有api key异常
      * @throws InputRequiredException 输入异常
      */
     private static GenerationResult callGenerationWithMessages(GenerationParam param) throws ApiException, NoApiKeyException, InputRequiredException {
