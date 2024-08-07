@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
  * @author mac
  */
 @Data
-public class Note implements Serializable {
+public class Notebook implements Serializable {
     @Serial
     private static final long serialVersionUID = -3880726229066089242L;
     public String content;
@@ -19,7 +19,7 @@ public class Note implements Serializable {
     public LocalDateTime timestamp;
     public boolean isPermanent;
 
-    public Note(String content, String tag, double importance, LocalDateTime timestamp) {
+    public Notebook(String content, String tag, double importance, LocalDateTime timestamp) {
         this.content = content;
         this.tag = tag;
         this.importance = importance;

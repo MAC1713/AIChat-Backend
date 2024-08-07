@@ -1,6 +1,7 @@
 package com.ai.aichatbackend.utils;
 
-import com.ai.aichatbackend.domain.Note;
+import com.ai.aichatbackend.common.Constants.R;
+import com.ai.aichatbackend.domain.Notebook;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -30,27 +31,27 @@ public class NotebookUtils {
     private static final Pattern TAG_PATTERN = Pattern.compile("Tag:\\s*(.*?)\\s*(?=Content:|$)", Pattern.DOTALL);
     private static final Pattern CONTENT_PATTERN = Pattern.compile("Content:\\s*(.*?)\\s*(?=Importance:|$)", Pattern.DOTALL);
     private static final Pattern IMPORTANCE_PATTERN = Pattern.compile("Importance:\\s*(\\d+(?:\\.\\d+)?)");
-    private List<Note> notes;
+    private List<Notebook> notebooks;
 
-    public List<Note> getNotes() {
-        this.notes = loadNotebook();
-        return new ArrayList<>(this.notes);
+    public List<Notebook> getNotes() {
+        this.notebooks = loadNotebook();
+        return new ArrayList<>(this.notebooks);
     }
 
     public void checkAndUpdateNotebook(String aiResponse) {
         log.info("aiResponse = " + aiResponse);
-        List<Note> newNotes = extractNotesFromResponse(aiResponse);
-        for (Note note : newNotes) {
-            addNote(note.getContent(), note.getTag(), note.getImportance());
+        List<Notebook> newNotebooks = extractNotesFromResponse(aiResponse);
+        for (Notebook notebook : newNotebooks) {
+            addNote(notebook.getContent(), notebook.getTag(), notebook.getImportance());
         }
     }
 
     public String getFormattedNotes() {
         StringBuilder sb = new StringBuilder();
         sb.append("AI Notebook:\n");
-        for (Note note : notes) {
-            sb.append("- [").append(note.tag).append("] (Importance: ").append(note.importance)
-                    .append(") ").append(note.content).append(" (Added: ").append(note.timestamp).append(")\n");
+        for (Notebook notebook : notebooks) {
+            sb.append("- [").append(notebook.tag).append("] (Importance: ").append(notebook.importance)
+                    .append(") ").append(notebook.content).append(" (Added: ").append(notebook.timestamp).append(")\n");
         }
         return sb.toString();
     }
@@ -61,8 +62,8 @@ public class NotebookUtils {
      * @param aiResponse ai返回的notebook指令
      * @return 需要写入notebook的数据
      */
-    public List<Note> extractNotesFromResponse(String aiResponse) {
-        List<Note> newNotes = new ArrayList<>();
+    public List<Notebook> extractNotesFromResponse(String aiResponse) {
+        List<Notebook> newNotebooks = new ArrayList<>();
         Matcher noteMatcher = NOTE_PATTERN.matcher(aiResponse);
 
         while (noteMatcher.find()) {
@@ -72,11 +73,11 @@ public class NotebookUtils {
             double importance = extractImportance(noteContent);
 
             if (tag != null && content != null && importance >= 0) {
-                newNotes.add(new Note(content, tag, importance, LocalDateTime.now()));
+                newNotebooks.add(new Notebook(content, tag, importance, LocalDateTime.now()));
             }
         }
 
-        return newNotes;
+        return newNotebooks;
     }
 
     private String extractField(Pattern pattern, String text) {
@@ -94,18 +95,18 @@ public class NotebookUtils {
     }
 
     public void addNote(String content, String tag, double importance) {
-        notes.add(new Note(content, tag, importance, LocalDateTime.now()));
-        saveNotebook(notes);
+        notebooks.add(new Notebook(content, tag, importance, LocalDateTime.now()));
+        saveNotebook(notebooks);
     }
 
     private static final DateTimeFormatter TIMESTAMP_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
     private static final Pattern LOAD_NOTE_PATTERN = Pattern.compile("\\[(.*?)]\\s*\\(Importance:\\s*(\\d+\\.\\d+)\\)\\s*((?:.|\\n)*?)\\s*\\(Added:\\s*(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\)", Pattern.DOTALL);
 
-    private void saveNotebook(List<Note> newNotes) {
+    private void saveNotebook(List<Notebook> newNotebooks) {
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(NOTEBOOK_FILE), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            for (Note note : newNotes) {
+            for (Notebook notebook : newNotebooks) {
                 writer.write(String.format("[%s] (Importance: %.1f) %s (Added: %s)",
-                        note.tag, note.importance, note.content, note.timestamp.format(TIMESTAMP_PATTERN)));
+                        notebook.tag, notebook.importance, notebook.content, notebook.timestamp.format(TIMESTAMP_PATTERN)));
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -113,8 +114,8 @@ public class NotebookUtils {
         }
     }
 
-    private List<Note> loadNotebook() {
-        List<Note> currNotes = new ArrayList<>();
+    private List<Notebook> loadNotebook() {
+        List<Notebook> currNotebooks = new ArrayList<>();
         Path path = Paths.get(NOTEBOOK_FILE);
 
         if (Files.exists(path)) {
@@ -127,13 +128,13 @@ public class NotebookUtils {
                     String noteContent = matcher.group(3).trim();
                     LocalDateTime timestamp = LocalDateTime.parse(matcher.group(4), TIMESTAMP_PATTERN);
 
-                    currNotes.add(new Note(noteContent, tag, importance, timestamp));
+                    currNotebooks.add(new Notebook(noteContent, tag, importance, timestamp));
                 }
             } catch (IOException e) {
                 log.error("Error loading notebook: " + e.getMessage());
             }
         }
-        return currNotes;
+        return currNotebooks;
     }
 
     /**
@@ -161,4 +162,43 @@ public class NotebookUtils {
     }
 
 
+    /**
+     * 保存笔记
+     * @param notebooks 笔记列表
+     * @return 保存结果
+     */
+    public R saveNotes(List<Notebook> notebooks) {
+        try {
+            Path path = Path.of(NOTEBOOK_FILE);
+            Files.delete(path);
+            saveNotebook(notebooks);
+        } catch (IOException e) {
+            log.error("Failed to save notes: " + e.getMessage());
+        }
+        return R.ok(loadNotebook());
+    }
+
+    /**
+     * 清空特定属性笔记本
+     *
+     * @param notebook 属性设置
+     */
+    public R cleanupNotes(Notebook notebook) {
+        if (notebook == null) {
+            return R.error("缺少参数");
+        }
+        double importance = notebook.getImportance();
+        LocalDateTime time = notebook.getTimestamp();
+        List<Notebook> currNotebooks = loadNotebook();
+        if (notebook.getTimestamp() != null && notebook.getImportance() != 0)  {
+            currNotebooks.removeIf(note -> note.getImportance() <= importance && note.getTimestamp().isBefore(time));
+        }else if (notebook.getTimestamp() != null) {
+            currNotebooks.removeIf(note -> note.getTimestamp().isBefore(time));
+        }else if (notebook.getImportance() != 0) {
+            currNotebooks.removeIf(note -> note.getImportance() <= importance);
+
+        }
+        saveNotes(currNotebooks);
+        return R.ok(loadNotebook());
+    }
 }

@@ -43,7 +43,7 @@ public class AIAssistantConstants implements Serializable {
                 [/NOTE]
                 
                 注意：确保每个笔记都包含所有三个字段，每个字段单独一行，且不在Content中使用[NOTE]标签，且"[NOTE]"，"[/NOTE]"为固定格式，不允许修改。
-                Note: Ensure each note contains all three fields, each field on a separate line, and don't use [NOTE] tags within the Content.";
+                Note: Ensure each notebook contains all three fields, each field on a separate line, and don't use [NOTE] tags within the Content.";
             """;
     public static final String REPEAT_NOTEBOOK = "Emma，重复一下notebook的使用时机和方法指令";
 
@@ -76,7 +76,7 @@ public class AIAssistantConstants implements Serializable {
                - 长期重要的信息：可以设置较高的重要性，最高可达1
                  For long-term important information: can set higher importance, up to 1
             5. 每条笔记都必须包含Tag、Content和Importance三个字段。
-               Each note must contain three fields: Tag, Content, and Importance.
+               Each notebook must contain three fields: Tag, Content, and Importance.
             6. 确保[NOTE]标签只用于标记笔记的开始和结束，不要在Content中使用。
                Ensure [NOTE] tags are only used to mark the beginning and end of notes, don't use them within the Content.
                         
