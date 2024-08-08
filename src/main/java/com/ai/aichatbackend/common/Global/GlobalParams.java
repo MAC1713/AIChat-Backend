@@ -24,6 +24,8 @@ public class GlobalParams {
 
     private List<Message> fullConversationHistory = new ArrayList<>();
 
+    private int systemPromptsToken = 0;
+    private int notebookToken = 0;
     private GlobalParams() {
         // 私有构造函数防止外部实例化
     }

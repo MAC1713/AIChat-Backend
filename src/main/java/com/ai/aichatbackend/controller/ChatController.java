@@ -39,6 +39,11 @@ public class ChatController {
         return R.ok(response);
     }
 
+    @PostMapping("/updateNotebook")
+    public R updateNotebook(@RequestBody AllConversation allConversation) throws NoApiKeyException, InputRequiredException, IOException, ClassNotFoundException {
+        return chatService.updateNotebook(allConversation);
+    }
+
     /**
      * 设置api对话参数
      * @param apiParams api参数

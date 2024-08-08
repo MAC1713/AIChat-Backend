@@ -1,5 +1,6 @@
 package com.ai.aichatbackend.utils;
 
+import com.ai.aichatbackend.common.Constants.R;
 import com.alibaba.dashscope.exception.InputRequiredException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import org.springframework.stereotype.Component;
@@ -30,8 +31,8 @@ public class NotebookAssistant {
      * @throws IOException            IO错误
      * @throws ClassNotFoundException 类错误
      */
-    public void sendToCheck(String userMessage, String aiMessage) throws NoApiKeyException, InputRequiredException, IOException, ClassNotFoundException {
-        messageUtils.sendNoteAssistantMessage("\"" + userMessage + "\n" + aiMessage + "\"\n" + NECESSARY_TO_NOTE);
+    public R sendToCheck(String userMessage, String aiMessage) throws NoApiKeyException, InputRequiredException, IOException, ClassNotFoundException {
+        return R.ok(messageUtils.sendNoteAssistantMessage("\"" + userMessage + "\n" + aiMessage + "\"\n" + NECESSARY_TO_NOTE));
     }
 
     /**
@@ -42,8 +43,8 @@ public class NotebookAssistant {
      * @throws IOException            IO错误
      * @throws ClassNotFoundException 类错误
      */
-    public void collection() throws NoApiKeyException, InputRequiredException, IOException, ClassNotFoundException {
-        messageUtils.sendNoteAssistantMessage(COLLATION);
+    public R collection() throws NoApiKeyException, InputRequiredException, IOException, ClassNotFoundException {
+        return R.ok(messageUtils.sendNoteAssistantMessage(COLLATION));
     }
 
 

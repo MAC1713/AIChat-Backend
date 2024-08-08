@@ -36,7 +36,7 @@ public class NotebookController {
     }
 
     @PostMapping("/cleanNotebook")
-    public R cleanNotebook(Notebook notebook) {
+    public R cleanNotebook(@RequestBody Notebook notebook) {
         return R.ok(notebookService.cleanNotebook(notebook));
     }
 }

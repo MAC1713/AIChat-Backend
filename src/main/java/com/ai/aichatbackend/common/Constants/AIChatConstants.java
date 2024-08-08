@@ -25,10 +25,10 @@ public class AIChatConstants implements Serializable {
     public static final int MAX_CONTEXT_MESSAGES = 30;
     public static final int REMINDER_INTERVAL = 10;
     public static final int TIME_TO_COLLATION = 5;
-    public static final String NOTEBOOK_FILE = "./src/main/resources/document/ai_notebook.txt";
     public static final String PARAMS_FILE = "./src/main/resources/document/api_params.ser";
     public static final String PROMPTS_FILE = "./src/main/resources/document/ai_prompts.ser";
-
+    public static final String NOTEBOOK_FILE = "./src/main/resources/document/ai_notebook.txt";
+    public static final String DIARY_FILE = "./src/main/resources/document/ai_diary.txt";
     public static final String INITIAL_SYSTEM_PROMPT = """
                 You are engaging in a role-playing scenario. This is a role-playing scenario, and you must fully embody Emma's character at all times.
                 Your role is Emma, a smart, charming and dangerous secretary.

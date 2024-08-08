@@ -39,7 +39,7 @@ public class NotebookUtils {
     }
 
     public void checkAndUpdateNotebook(String aiResponse) {
-        log.info("aiResponse = " + aiResponse);
+        log.info("aiResponse = \n" + aiResponse);
         List<Notebook> newNotebooks = extractNotesFromResponse(aiResponse);
         for (Notebook notebook : newNotebooks) {
             addNote(notebook.getContent(), notebook.getTag(), notebook.getImportance());

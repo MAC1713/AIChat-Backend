@@ -1,5 +1,6 @@
 package com.ai.aichatbackend.service;
 
+import com.ai.aichatbackend.common.Constants.R;
 import com.ai.aichatbackend.domain.AllConversation;
 import com.ai.aichatbackend.domain.ApiParams;
 import com.alibaba.dashscope.exception.InputRequiredException;
@@ -23,6 +24,17 @@ public interface ChatService {
      * @throws ClassNotFoundException 类找不到
      */
     String sendMessage(AllConversation allConversation) throws NoApiKeyException, InputRequiredException, IOException, ClassNotFoundException;
+
+    /**
+     * 并行更新笔记本
+     * @param allConversation 所有消息
+     * @return 更新结果
+     * @throws NoApiKeyException 缺少apiKey
+     * @throws InputRequiredException 输入缺少参数
+     * @throws IOException io异常
+     * @throws ClassNotFoundException 类找不到
+     */
+    R updateNotebook(AllConversation allConversation) throws NoApiKeyException, InputRequiredException, IOException, ClassNotFoundException;
 
     /**
      * 设置对话参数
