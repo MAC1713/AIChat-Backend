@@ -95,8 +95,9 @@ public class NotebookUtils {
     }
 
     public void addNote(String content, String tag, double importance) {
-        notebooks.add(new Notebook(content, tag, importance, LocalDateTime.now()));
-        saveNotebook(notebooks);
+        List<Notebook> newNotes = new ArrayList<>();
+        newNotes.add(new Notebook(content, tag, importance, LocalDateTime.now()));
+        saveNotebook(newNotes);
     }
 
     private static final DateTimeFormatter TIMESTAMP_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");

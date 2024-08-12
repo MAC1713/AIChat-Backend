@@ -45,6 +45,8 @@ public class AIAssistantConstants implements Serializable {
                 注意：确保每个笔记都包含所有三个字段，每个字段单独一行，且不在Content中使用[NOTE]标签，且"[NOTE]"，"[/NOTE]"为固定格式，不允许修改。
                 Note: Ensure each notebook contains all three fields, each field on a separate line, and don't use [NOTE] tags within the Content.";
             """;
+    public static final int HOW_TO_USE_NOTEBOOK_TOKEN = 435;
+
     public static final String REPEAT_NOTEBOOK = "Emma，重复一下notebook的使用时机和方法指令";
 
     public static final String NECESSARY_TO_NOTE = """
@@ -83,4 +85,5 @@ public class AIAssistantConstants implements Serializable {
             请使用这个格式来组织和存储从对话中提取的重要信息。
             Please use this format to organize and store important information extracted from the conversation.";
             """;
+    public static final int COLLATION_TOKEN = 368;
 }

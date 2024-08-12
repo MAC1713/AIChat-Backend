@@ -9,7 +9,10 @@ import com.ai.aichatbackend.service.ChatService;
 import com.alibaba.dashscope.exception.InputRequiredException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
@@ -46,6 +49,7 @@ public class ChatController {
 
     /**
      * 设置api对话参数
+     *
      * @param apiParams api参数
      * @return api参数
      * @throws IOException 创建文件失败

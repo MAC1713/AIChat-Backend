@@ -39,7 +39,7 @@ public class MessageUtils {
     private final TokenCalculator tokenCalculator;
 
     @Autowired
-    private MessageUtils(NotebookUtils notebookUtils, ApiParamsUtils apiParamsUtils, AIPromptsUtils aiPromptsUtils, TokenCalculator tokenCalculator, DiaryUtils diaryUtils)    {
+    private MessageUtils(NotebookUtils notebookUtils, ApiParamsUtils apiParamsUtils, AIPromptsUtils aiPromptsUtils, TokenCalculator tokenCalculator, DiaryUtils diaryUtils) {
         this.notebookUtils = notebookUtils;
         this.apiParamsUtils = apiParamsUtils;
         this.aiPromptsUtils = aiPromptsUtils;
@@ -136,7 +136,7 @@ public class MessageUtils {
 
         // 3. 计算剩余可用于历史消息的token数
         int remainingTokens = SMARTEST_MAX_TOKENS - systemToken - notebookToken;
-        if (remainingTokens < SMARTEST_MAX_TOKENS / 6){
+        if (remainingTokens < SMARTEST_MAX_TOKENS / 6) {
             //整理记事本->生成日记
             diaryUtils.saveDiary(sendEmployeeMessage(HOW_TO_COLLECTION_NOTEBOOK));
             // 移除最后一条消息
@@ -146,7 +146,7 @@ public class MessageUtils {
 
         int diaryToken = ConstantsParams.getInstance().getDiaryToken();
 
-        if (systemToken + diaryToken > SMARTEST_MAX_TOKENS){
+        if (systemToken + diaryToken > SMARTEST_MAX_TOKENS) {
             return R.error("超出token上限，请清理记事本");
         }
 

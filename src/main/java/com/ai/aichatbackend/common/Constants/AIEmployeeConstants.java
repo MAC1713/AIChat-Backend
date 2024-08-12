@@ -29,4 +29,5 @@ public class AIEmployeeConstants implements Serializable {
             Fourth: Record events that are further in the past and of lower importance; this part can be skipped as per your thoughts and personality.
             Key point: Keep the total output length within 3000 tokens or 3000 words! Use English!
             """;
+    public static final int HOW_TO_COLLECTION_NOTEBOOK_TOKEN = 388;
 }
