@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ai.aichatbackend.mapper.ApiKeyDao">
+
+    <insert id="saveApiKey">
+        insert into apikey (apikey) values (#{apikey});
+    </insert>
+
+    <delete id="deleteApiKey">
+        truncate table apikey;
+    </delete>
+
+    <select id="selectAll" resultType="java.lang.String">
+        select * from apikey;
+    </select>
+</mapper>
