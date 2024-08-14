@@ -10,6 +10,7 @@ import java.util.List;
  */
 @Data
 public class AllConversation {
+    public String id;
     public String userMessage;
     public String aiMessage;
     public int messageCount;

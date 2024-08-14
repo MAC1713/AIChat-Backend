@@ -5,16 +5,17 @@ import com.ai.aichatbackend.common.Constants.R;
 import com.ai.aichatbackend.common.Global.GlobalParams;
 import com.ai.aichatbackend.domain.AllConversation;
 import com.ai.aichatbackend.domain.ApiParams;
+import com.ai.aichatbackend.domain.HistoryChat;
 import com.ai.aichatbackend.service.ChatService;
+import com.ai.aichatbackend.service.HistoryChatService;
+import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.exception.InputRequiredException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 
 /**
@@ -26,6 +27,9 @@ public class ChatController {
 
     @Autowired
     private ChatService chatService;
+
+    @Autowired
+    private HistoryChatService historyChatService;
 
     /**
      * 与ai对话
@@ -40,6 +44,16 @@ public class ChatController {
         response.setMessageCount(GlobalParams.getInstance().getMessageCount());
         response.setFullConversationHistory(GlobalParams.getInstance().getFullConversationHistory());
         return R.ok(response);
+    }
+    @PostMapping("/syncHistory")
+    public R syncChatHistory(@RequestBody HistoryChat historyChat) {
+        return R.ok(historyChatService.saveChatHistory(historyChat));
+    }
+
+    @GetMapping("/history/{conversationId}")
+    public R getChatHistory(@PathVariable String conversationId) {
+        List<Message> history = historyChatService.getChatHistory(conversationId);
+        return R.ok(history);
     }
 
     @PostMapping("/updateNotebook")
