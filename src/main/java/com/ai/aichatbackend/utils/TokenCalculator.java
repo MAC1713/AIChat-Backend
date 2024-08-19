@@ -1,5 +1,6 @@
 package com.ai.aichatbackend.utils;
 
+import com.ai.aichatbackend.service.ApiKeyService;
 import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
@@ -8,7 +9,7 @@ import com.alibaba.dashscope.exception.InputRequiredException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import com.alibaba.dashscope.tokenizers.Tokenization;
 import com.alibaba.dashscope.tokenizers.TokenizationResult;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -21,8 +22,12 @@ import java.util.List;
 @Component
 public class TokenCalculator {
 
-    @Value("${api-key}")
-    private String apiKey;
+    private final String apiKey;
+
+    @Autowired
+    public TokenCalculator(ApiKeyService apiKeyService) {
+        this.apiKey = apiKeyService.getApiKey();
+    }
 
     public int tokenizer(String message) throws ApiException, NoApiKeyException, InputRequiredException {
         Tokenization tokenizer = new Tokenization();

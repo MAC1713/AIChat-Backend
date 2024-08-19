@@ -17,10 +17,14 @@ import java.util.List;
 @Service
 public class PromptsServiceImpl implements PromptsService {
 
-    @Autowired
-    private PromptsMapper promptsMapper;
+    private final PromptsMapper promptsMapper;
+    private final TokenCalculator tokenCalculator;
 
-    private final TokenCalculator tokenCalculator = new TokenCalculator();
+    @Autowired
+    public PromptsServiceImpl(PromptsMapper promptsMapper, TokenCalculator tokenCalculator) {
+        this.promptsMapper = promptsMapper;
+        this.tokenCalculator = tokenCalculator;
+    }
 
     /**
      * 获取所有prompts

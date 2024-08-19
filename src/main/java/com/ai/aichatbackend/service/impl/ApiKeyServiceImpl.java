@@ -1,6 +1,6 @@
 package com.ai.aichatbackend.service.impl;
 
-import com.ai.aichatbackend.mapper.ApiKeyDao;
+import com.ai.aichatbackend.mapper.ApiKeyMapper;
 import com.ai.aichatbackend.service.ApiKeyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 public class ApiKeyServiceImpl implements ApiKeyService {
 
     @Autowired
-    private ApiKeyDao apiKeyDao;
+    private ApiKeyMapper apiKeyMapper;
 
     /**
      * 获取apiKey
@@ -21,7 +21,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
      */
     @Override
     public String getApiKey() {
-        return apiKeyDao.selectAll();
+        return apiKeyMapper.selectAll();
     }
 
     /**
@@ -32,10 +32,10 @@ public class ApiKeyServiceImpl implements ApiKeyService {
      */
     @Override
     public Integer saveApiKey(String apiKey) {
-        if (apiKeyDao.selectAll() != null) {
-            apiKeyDao.deleteApiKey();
+        if (apiKeyMapper.selectAll() != null) {
+            apiKeyMapper.deleteApiKey();
         }
-        return apiKeyDao.saveApiKey(apiKey);
+        return apiKeyMapper.saveApiKey(apiKey);
     }
 
 

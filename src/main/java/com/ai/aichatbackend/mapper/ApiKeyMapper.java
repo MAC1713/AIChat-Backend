@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
  * @author mac
  */
 @Mapper
-public interface ApiKeyDao {
+public interface ApiKeyMapper {
 
     /**
      * 获取apikey

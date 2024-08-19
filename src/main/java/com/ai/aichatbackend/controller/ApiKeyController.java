@@ -1,6 +1,7 @@
 package com.ai.aichatbackend.controller;
 
 import com.ai.aichatbackend.common.Constants.R;
+import com.ai.aichatbackend.domain.ApiKey;
 import com.ai.aichatbackend.service.ApiKeyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class ApiKeyController {
     }
 
     @PostMapping("/saveApiKey")
-    public R saveApiKey(@RequestBody String apiKey) {
-        return R.ok(apiKeyService.saveApiKey(apiKey));
+    public R saveApiKey(@RequestBody ApiKey apiKey) {
+        return R.ok(apiKeyService.saveApiKey(apiKey.getApikey()));
     }
 }

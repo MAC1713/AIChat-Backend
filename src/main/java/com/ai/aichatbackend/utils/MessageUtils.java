@@ -3,6 +3,7 @@ package com.ai.aichatbackend.utils;
 import com.ai.aichatbackend.common.Constants.R;
 import com.ai.aichatbackend.common.Global.ConstantsParams;
 import com.ai.aichatbackend.common.Global.GlobalParams;
+import com.ai.aichatbackend.service.ApiKeyService;
 import com.alibaba.dashscope.aigc.generation.Generation;
 import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
@@ -13,7 +14,6 @@ import com.alibaba.dashscope.exception.InputRequiredException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -30,8 +30,7 @@ import static com.ai.aichatbackend.common.Constants.AIEmployeeConstants.HOW_TO_C
 @Slf4j
 @Component
 public class MessageUtils {
-    @Value("${api-key}")
-    private String apiKey;
+    private final String apiKey;
     private final NotebookUtils notebookUtils;
     private final ApiParamsUtils apiParamsUtils;
     private final AIPromptsUtils aiPromptsUtils;
@@ -39,12 +38,13 @@ public class MessageUtils {
     private final TokenCalculator tokenCalculator;
 
     @Autowired
-    private MessageUtils(NotebookUtils notebookUtils, ApiParamsUtils apiParamsUtils, AIPromptsUtils aiPromptsUtils, TokenCalculator tokenCalculator, DiaryUtils diaryUtils) {
+    private MessageUtils(NotebookUtils notebookUtils, ApiParamsUtils apiParamsUtils, AIPromptsUtils aiPromptsUtils, TokenCalculator tokenCalculator, DiaryUtils diaryUtils, ApiKeyService apiKeyService) {
         this.notebookUtils = notebookUtils;
         this.apiParamsUtils = apiParamsUtils;
         this.aiPromptsUtils = aiPromptsUtils;
         this.tokenCalculator = tokenCalculator;
         this.diaryUtils = diaryUtils;
+        this.apiKey = apiKeyService.getApiKey();
     }
 
     private List<Message> fullConversationHistory;
