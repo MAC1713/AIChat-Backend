@@ -28,7 +28,7 @@ public class PromptsTypeController {
      *
      * @return 查询结果
      */
-    @GetMapping("/getPromptsTypeList")
+    @PostMapping("/getPromptsTypeList")
     public R getPromptsTypeList(@RequestBody PromptsType promptsType) {
         return R.ok(promptsTypeService.getPromptsTypeList(promptsType));
     }
