@@ -1,10 +1,17 @@
 package com.ai.aichatbackend.controller;
 
 import com.ai.aichatbackend.common.Constants.R;
+import com.ai.aichatbackend.domain.PromptsAll;
 import com.ai.aichatbackend.domain.PromptsType;
+import com.ai.aichatbackend.service.PromptsService;
 import com.ai.aichatbackend.service.PromptsTypeService;
+import com.alibaba.dashscope.exception.InputRequiredException;
+import com.alibaba.dashscope.exception.NoApiKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * (PromptsType)表控制层
@@ -18,9 +25,12 @@ public class PromptsTypeController {
 
     private final PromptsTypeService promptsTypeService;
 
+    private final PromptsService promptsService;
+
     @Autowired
-    public PromptsTypeController(PromptsTypeService promptsTypeService) {
+    public PromptsTypeController(PromptsTypeService promptsTypeService, PromptsService promptsService)  {
         this.promptsTypeService = promptsTypeService;
+        this.promptsService = promptsService;
     }
 
     /**
@@ -29,8 +39,25 @@ public class PromptsTypeController {
      * @return 查询结果
      */
     @PostMapping("/getPromptsTypeList")
-    public R getPromptsTypeList(@RequestBody PromptsType promptsType) {
-        return R.ok(promptsTypeService.getPromptsTypeList(promptsType));
+    public R getPromptsTypeList(@RequestBody PromptsType promptsType) throws NoApiKeyException, InputRequiredException {
+        List<PromptsType> promptsTypeList = promptsTypeService.getPromptsTypeList(promptsType);
+        List<PromptsAll> list = new ArrayList<>();
+
+        for (PromptsType type : promptsTypeList) {
+            PromptsAll promptsAll = new PromptsAll();
+
+            promptsAll.setId(type.getId());
+            promptsAll.setPromptType(type.getPromptsType());
+            promptsAll.setDescription(type.getDescription());
+            promptsAll.setUpdateTime(type.getUpdateTime());
+
+            promptsAll.setPromptData(promptsService.getPromptsById(type.getPromptsType()).getPromptData());
+            promptsAll.setTokens(promptsService.getPromptsById(type.getPromptsType()).getTokens());
+
+            list.add(promptsAll);
+        }
+
+        return R.ok(list);
     }
 
     /**

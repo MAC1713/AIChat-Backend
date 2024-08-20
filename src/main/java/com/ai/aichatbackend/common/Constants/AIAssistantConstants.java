@@ -22,7 +22,7 @@ public class AIAssistantConstants implements Serializable {
     @AutoFetchPrompt(promptIdField = "HOW_TO_USE_NOTEBOOK")
     public static String HOW_TO_USE_NOTEBOOK;
 
-    @AutoFetchPrompt(promptIdField = "HOW_TO_USE_NOTEBOOK_TOKEN", type = "int")
+    @AutoFetchPrompt(promptIdField = "HOW_TO_USE_NOTEBOOK", type = "int")
     public static int HOW_TO_USE_NOTEBOOK_TOKEN;
 
     @AutoFetchPrompt(promptIdField = "REPEAT_NOTEBOOK")
@@ -32,6 +32,6 @@ public class AIAssistantConstants implements Serializable {
     public static String NECESSARY_TO_NOTE;
     @AutoFetchPrompt(promptIdField = "COLLATION")
     public static String COLLATION;
-    @AutoFetchPrompt(promptIdField = "COLLATION_TOKEN", type = "int")
+    @AutoFetchPrompt(promptIdField = "COLLATION", type = "int")
     public static int COLLATION_TOKEN;
 }
